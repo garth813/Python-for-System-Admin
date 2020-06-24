@@ -1,0 +1,48 @@
+#!/usr/bin/python3.7
+import subprocess, os,re
+
+#this program will find the files in a directory and then make the 
+#next one in the sequence
+
+#get the files in the directory using subprocess package
+ls_result = subprocess.run(['ls','./dir_for_programs'],capture_output=True)
+
+#right now ls_result.stdout is a bytes object. Let's change that
+
+files = str(ls_result.stdout.decode())
+#lets make these files which are one big string, a list for processing
+file_list = files.rsplit("\n")
+
+#here is our regex pattern, we're going to save the number from each
+#file in the list saved_groups so we can tell what our next file should be
+file_regex = re.compile(r"(file)(\d*)(.txt)")
+saved_groups = []
+
+for f in file_list:
+	try:
+		temp = file_regex.search(f)
+		saved_groups.append(temp.group(2))
+	except:
+		temp = None
+
+#ok,now we should have a list (saved_groups) of all the numbers in the dir
+#let's find the largest 
+
+largest_num = 0
+for i in saved_groups:
+	temp = int(i)
+	if temp > largest_num:
+		largest_num = temp
+
+#verify the number is right, COMMENT this line later
+#print(largest_num)
+
+next_number = largest_num + 1
+string_number = str(next_number)
+new_file_name = "file" + string_number + ".txt"
+path = "/home/chance/bin/python_programs/useful_programs/dir_for_programs/"
+full_path = path + new_file_name
+
+with open(full_path,'w+') as f:
+	#actions indented here
+	pass

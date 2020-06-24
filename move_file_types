@@ -1,0 +1,67 @@
+#!/usr/bin/python3.7
+import sys
+import re
+import subprocess
+import os
+import datetime
+import argparse
+from datetime import datetime
+import shutil
+from shutil import copyfile
+#first set up the argument parser
+desc = 'This script takes two MANDATORY arguments, -s or --source' \
+	' which represents the directory you want to look for the files and '\
+	' -d or --destination which represents the directory that the files'\
+	' should be moved to'
+
+parser = argparse.ArgumentParser(description=(desc))
+
+parser.add_argument('-s','--source',help="The directory you want to move files from",
+	type=str,required=False)
+
+parser.add_argument('-d','--destination'
+	,help='The target directory that the files will get moved to.',type=str,
+		required=True)
+
+args = parser.parse_args()
+destination_dir = args.destination
+source_dir = args.source
+
+#check and see if the destination path is valid, if  not we'll just exit
+#We're not going to create new directories because we don't want to mess
+#our system up
+
+if not os.path.exists(destination_dir):
+	print(f'The destination directory "{destination_dir}" does not exist.\n'\
+		'Check that the directory you want to move the files TO is correct')
+	sys.exit(1)
+elif not os.path.exists(source_dir):
+	print(f'The source directory "{source_dir}" does not exist.\nCheck that the ' \
+		'file you want to move files FROM is correct')
+	sys.exit(1)
+
+#Suppose there are various types of files in a directory but with a similar format
+#eg,  helloworld-13.py log-91.txt, or filename-number.file_extension
+#Move the files to subdirectory (a directory under the one supplied by the
+#in the -d argument) according to their extension. For example, .txt files will go 
+#to a directory called txt (no period)
+
+#os.fchdir(filepath) this changes the pwd
+date_info = datetime.now().strftime('%m-%d-%Y')
+file_regex = re.compile(r'(\s*)-(\d*)(\.*)')
+
+for file in os.listdir(source_dir):
+	if bool(file_regex.search(file)):    
+		file_as_list = file.split('.')
+		sub_dir_name = str(file_as_list[-1])
+        
+		new_file_name = file + '_' + date_info
+		copyfile(source_dir + '/' + file, source_dir + '/' +  new_file_name)
+		os.remove(source_dir + '/' + file)
+		try:
+			os.mkdir(destination_dir + '/' + sub_dir_name)
+			shutil.move(source_dir + '/' +  new_file_name,destination_dir+'/'+sub_dir_name)	
+		except OSError:
+			shutil.move(source_dir + '/' +  new_file_name,destination_dir+'/'+sub_dir_name)
+	else:
+		continue
